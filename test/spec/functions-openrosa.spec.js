@@ -407,6 +407,8 @@ describe('Custom "OpenRosa" functions', function () {
             ["min(//*[@id='FunctionMinCase']/*[position()=1], //*[@id='FunctionMinCase']/*[position()=2], //*[@id='FunctionMinCase']/*[position()=2])", doc, 5],
             ["min(*)", doc.getElementById('FunctionMaxMinWithEmpty'), NaN],
             ["min(1, 2, 3)", doc, 1],
+            ["min(1, 2, 0)", doc, 0],
+            ["min(0, 2, 3)", doc, 0],
             ["min('')", doc, NaN],
             ["min(node())", doc.getElementById('FunctionNumberCaseNotNumberMultiple'), NaN],
             ["min(//nonexisting)", doc, NaN]
@@ -426,6 +428,8 @@ describe('Custom "OpenRosa" functions', function () {
             ["max(//*[@id='FunctionMaxCase']/*[position()=1], //*[@id='FunctionMaxCase']/*[position()=2], //*[@id='FunctionMaxCase']/*[position()=2])", doc, -5],
             ["max(*)", doc.getElementById('FunctionMaxMinWithEmpty'), NaN],
             ["max(1, 2, 3)", doc, 3],
+            ["max(-1, -3, 0)", doc, 0],
+            ["max(-1, 0, -3)", doc, 0],
             ["max('')", doc, NaN],
             ["max(node())", doc.getElementById('FunctionNumberCaseNotNumberMultiple'), NaN],
             ["max(//nonexisting)", doc, NaN]

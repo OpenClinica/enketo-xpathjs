@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+[Unreleased]
+--------------------
+###### Removed
+- Version() function as it has been broken for years and is not part of the spec.
+
 [1.6.3] - 2018-04-21
 --------------------
 - Min() and max() broken if non-last argument is result and is 0 or negative.

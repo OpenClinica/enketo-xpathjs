@@ -670,22 +670,6 @@ describe('Custom "OpenRosa" functions', function () {
         });
     });
 
-    it('version()', function () {
-        var result;
-
-        result = documentEvaluate("version()", doc, null, win.XPathResult.STRING_TYPE, null);
-        expect(result.stringValue).to.equal("1a");
-
-        // doesn't work in phantomJS (removeAttribute() doesn't seem to work)
-        doc.documentElement.removeAttribute('version');
-        result = documentEvaluate("version()", doc, null, win.XPathResult.STRING_TYPE, null);
-        expect(result.stringValue).to.equal("");
-
-        //change the context
-        result = documentEvaluate("version()", doc.getElementById('FunctionSelectedCaseEmpty'), null, win.XPathResult.STRING_TYPE, null);
-        expect(result.stringValue).to.equal("");
-    });
-
     it('once()', function () {
         var result;
 

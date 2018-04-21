@@ -5195,30 +5195,6 @@ var XPathJS = (function(){
 			},
 
 			/**
-			 * The version function returns the value of the version attribute of the root element
-			 *
-			 * @return {StringType}
-			 */
-			version : {
-
-				fn: function()
-				{
-					var root = (this.node.nodeName === '#document') ? this.node.documentElement : this.node.ownerDocument.documentElement,
-						versionAttr = root.attributes['version'];
-
-					if( versionAttr ) {
-						return new StringType(versionAttr.textContent);
-					}
-					return new StringType('');
-				},
-
-				args: [],
-
-				ret: 'string'
-
-			},
-
-			/**
 			 * The once function returns the value of the parameter if its own value
 			 * is not empty, NaN, [Infinity or -Infinity]. The naming is therefore misleading! 
 			 * Also note that the parameter expr is always evaluated.

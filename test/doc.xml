@@ -152,12 +152,14 @@
 
 		<div id="FunctionMinCase">
 			<div>5</div>
+			<div>0</div>
 			<div>15</div>
 			<div>10</div>
 		</div>
 
 		<div id="FunctionMaxCase">
 			<div>-5</div>
+			<div>0</div>
 			<div>-15</div>
 			<div>-10</div>
 		</div>

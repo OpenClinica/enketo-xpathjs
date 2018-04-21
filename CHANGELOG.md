@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+[1.6.3] - 2018-04-21
+--------------------
+- Min() and max() broken if non-last argument is result and is 0 or negative.
+
 [1.6.2] - 2018-01-23
 --------------------
 ##### Fixed

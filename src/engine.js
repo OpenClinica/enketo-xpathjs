@@ -4617,36 +4617,36 @@ var XPathJS = (function(){
 				{
 					var i, j, min, val, nodeset;
 
-					for (i = 0; i < arguments.length; i++)
+					for ( i = 0; i < arguments.length; i++ )
 					{
 
 						if (arguments[i] instanceof NodeSetType ){
 
 							nodeset = arguments[i].toNodeSet();
 						
-							for(j = 0; j < nodeset.length; j++)
+							for( j = 0; j < nodeset.length; j++ )
 							{
-								val = new StringType(nodeStringValue(nodeset[j]));
+								val = new StringType( nodeStringValue( nodeset[j] ) );
 								if (val)
 								{
-									min = (min) ? Math.min(min, val.toNumber()) : val.toNumber();
+									min = typeof min !== 'undefined' ? Math.min( min, val.toNumber() ) : val.toNumber();
 								}
 							}
-							if (nodeset.length === 0){
+							if ( nodeset.length === 0 ){
 								min = NaN;
 							}
 						} 
 						else 
 						{
-							val = new StringType(arguments[i].toString());
-							if (val)
+							val = new StringType( arguments[i].toString() );
+							if ( val )
 							{
-								min = (min) ? Math.min(min, val.toNumber()) : val.toNumber();
+								min = typeof min !== 'undefined' ? Math.min( min, val.toNumber() ) : val.toNumber();
 							}
 						}
 					}
 					
-					return new NumberType(min);
+					return new NumberType( min );
 				},
 				
 				args: [
@@ -4673,35 +4673,35 @@ var XPathJS = (function(){
 				{
 					var i, j, max, val, nodeset;
 					
-					for (i = 0; i < arguments.length; i++)
+					for ( i = 0; i < arguments.length; i++ )
 					{
-						if (arguments[i] instanceof NodeSetType ){
+						if ( arguments[i] instanceof NodeSetType ){
 							
 							nodeset = arguments[i].toNodeSet();
 						
-							for(j = 0; j < nodeset.length; j++)
+							for( j = 0; j < nodeset.length; j++ )
 							{
-								val = new StringType(nodeStringValue(nodeset[j]));
-								if (val)
+								val = new StringType( nodeStringValue(nodeset[j]) );
+								if ( val )
 								{
-									max = (max) ? Math.max(max, val.toNumber()) : val.toNumber();
+									max = typeof max !== 'undefined' ? Math.max( max, val.toNumber() ) : val.toNumber();
 								}
 							}
-							if (nodeset.length === 0){
+							if ( nodeset.length === 0 ){
 								max = NaN;
 							}
 						}
 						else {
-							val = new StringType(arguments[i].toString());
-							if (val)
+							val = new StringType( arguments[i].toString() );
+							if ( val )
 							{
-								max = (max) ? Math.max(max, val.toNumber()) : val.toNumber();
+								max = typeof max !== 'undefined'  ? Math.max( max, val.toNumber() ) : val.toNumber();
 							}
 						}
 						
 					}
 					
-					return new NumberType(max);
+					return new NumberType( max );
 				},
 				
 				args: [

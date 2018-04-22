@@ -5306,6 +5306,24 @@ var XPathJS = (function(){
 				ret: 'number'
 			},
 
+			randomize: {
+				/**
+				 * 
+				 */
+				fn: function(nodeset, seed)
+				{
+					var seedValue = seed ? seed.toNumber() : undefined;
+					return new NodeSetType( shuffle( nodeset.toNodeSet(), seedValue ), 'document-order' );
+				},
+
+				args: [
+					{t: 'node-set'},
+					{t: 'number', r: false}
+				],
+				
+				ret: 'node-set'
+			},
+
 			/**
 			 * MOVED TO ENKETO-CORE WHERE IT TRANSFORMED INTO REGULAR XPATH
 			 *

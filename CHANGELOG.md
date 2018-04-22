@@ -2,8 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-[Unreleased]
+[1.7.0] - 2018-04-22
 --------------------
+###### Added
+- Randomize() function that randomizes nodesets.
+
 ###### Removed
 - Version() function as it has been broken for years and is not part of the spec.
 

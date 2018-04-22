@@ -27,6 +27,7 @@ module.exports = function(grunt) {
             dist: {
                 src: [
                     'src/date-extensions.js',
+                    'src/shuffle.js',
                     'src/engine.js',
                     'dist/parser.js',
                     'src/umd.js'

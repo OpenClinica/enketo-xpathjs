@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ##### Added
 - Decimal-time() support.
 
+##### Fixed
+- Decimal-date-time() not spec-compliant.
+
 [1.7.0] - 2018-04-22
 --------------------
 ###### Added

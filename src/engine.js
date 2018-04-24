@@ -4429,21 +4429,32 @@ var XPathJS = (function(){
 				ret: 'string'
 			},
 
-			/* Alias of "date-time"
-			 * Not 100% sure this is correct, but I think the behaviour will match ODK's behaviour.
+			/** 
+			 * @see https://opendatakit.github.io/xforms-spec/#fn:decimal-date-time
 			 */
 			'decimal-date-time': {
 
-				fn: function(obj)
+				fn: function(dt)
 				{
-					return new DateType(obj.toDate());
+					var MS_IN_DAY = 1000 * 60 * 60 * 24;
+					var PRECISION = 1000;
+					var d = dt.toDate();
+					var dec;
+
+					if ( d.toString() !== 'Invalid Date' ) {
+						dec = Math.round(d.getTime() * PRECISION / MS_IN_DAY) / PRECISION;
+					} else {
+						dec = Number.NaN;
+					}
+
+					return new NumberType(  dec );
 				},
 
 				args: [
 					{t: 'object'}
 				],
 
-				ret: 'string'
+				ret: 'number'
 			},
 
 			/** 
@@ -4467,11 +4478,11 @@ var XPathJS = (function(){
 						m[ 6 ] < 24 && m[ 6 ] >= 0 && // this could be tighter
 						m[ 7 ] < 60 && m[ 7 ] >= 0 // this is probably either 0 or 30
 					) {
-					var pad2 = function( x ) { return ( x < 10 ) ? '0' + x : x;};
-					var today = new Date(); // use today to cater to daylight savings time.
-					var d = new Date( today.getFullYear() + '-' + pad2( today.getMonth() + 1 ) + '-' + pad2(today.getDate()) + 'T' + time);
+						var pad2 = function( x ) { return ( x < 10 ) ? '0' + x : x;};
+						var today = new Date(); // use today to cater to daylight savings time.
+						var d = new Date( today.getFullYear() + '-' + pad2( today.getMonth() + 1 ) + '-' + pad2(today.getDate()) + 'T' + time);
 
-					if ( d.toString() === 'Invalid Date' ){
+						if ( d.toString() === 'Invalid Date' ){
 							dec = Number.NaN;
 						} else {
 							dec =  Math.round( (d.getSeconds() / 3600 + d.getMinutes() / 60 + d.getHours() )* PRECISION / 24) / PRECISION;

@@ -848,6 +848,31 @@ describe('Custom "OpenRosa" functions', function () {
 
     });
 
+    describe('decimal-date()', function(){
+        [
+            ['"1970-01-01T00:00:00.000Z"', 0.000],
+            ['"1970-01-02T00:00:00.000Z"', 1.000],
+            ['"2018-04-24T15:30:00.000+06:00"', 17645.396],
+        ].forEach(function(t){
+            it(`decimates dates ${t[0]} to ${t[1]}`, function(){
+                var result = documentEvaluate(`decimal-date-time(${t[0]})`, doc, helpers.xhtmlResolver, win.XPathResult.NUMBER_TYPE, null);
+                expect(result.numberValue).to.deep.equal(t[1]);
+            });
+        });
+
+        [
+            '',
+            '"1970-01-01T00:00:00.000Z", 2',
+        ].forEach(function (t) {
+            it(`with invalid args (${t}), throws an error`, function(){
+                var test = function () {
+                    documentEvaluate(`decimal-date-time(${t})`, doc, helpers.xhtmlResolver, win.XPathResult.NUMBER_TYPE, null);
+                };
+                expect(test).to.throw(win.Error);
+            });
+        });
+    });
+
     describe('decimal-time()', function(){
         [
             ['"06:00:00.000-07:00"', 0.250],

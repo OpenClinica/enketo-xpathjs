@@ -4446,6 +4446,50 @@ var XPathJS = (function(){
 				ret: 'string'
 			},
 
+			/** 
+			 * @see https://opendatakit.github.io/xforms-spec/#fn:decimal-time
+			 */
+			'decimal-time': {
+
+				fn: function(time)
+				{
+					// There is no Time type, and so far we don't need it so we do all validation 
+					// and conversion here, manually.
+					var	m = time.toString().match( /^(\d\d):(\d\d):(\d\d)(\.\d\d?\d?)?(\+|-)(\d\d):(\d\d)$/ );
+					var ERR = new Error('Invalid time format provided.');
+					var PRECISION = 1000;
+					var dec;
+					
+					if ( m && 
+						m[ 1 ] < 24 && m[ 1 ] >= 0 &&
+						m[ 2 ] < 60 && m[ 2 ] >= 0 &&
+						m[ 3 ] < 60 && m[ 3 ] >= 0 &&
+						m[ 6 ] < 24 && m[ 6 ] >= 0 && // this could be tighter
+						m[ 7 ] < 60 && m[ 7 ] >= 0 // this is probably either 0 or 30
+					) {
+					var pad2 = function( x ) { return ( x < 10 ) ? '0' + x : x;};
+					var today = new Date(); // use today to cater to daylight savings time.
+					var d = new Date( today.getFullYear() + '-' + pad2( today.getMonth() + 1 ) + '-' + pad2(today.getDate()) + 'T' + time);
+
+					if ( d.toString() === 'Invalid Date' ){
+							dec = Number.NaN;
+						} else {
+							dec =  Math.round( (d.getSeconds() / 3600 + d.getMinutes() / 60 + d.getHours() )* PRECISION / 24) / PRECISION;
+						}
+					} else {
+						dec = Number.NaN;
+					}
+
+					return new NumberType(  dec );
+				},
+
+				args: [
+					{t: 'string'}
+				],
+
+				ret: 'number'
+			},
+
 			today: {
 				
 				fn: function()

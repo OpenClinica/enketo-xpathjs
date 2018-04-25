@@ -21,6 +21,7 @@
 /* global window */
 var parser = require('../dist/parser');
 var shuffle = require('./shuffle');
+var geo = require('./geo');
 require('./date-extensions');
 
 module.exports = (function(){
@@ -5248,68 +5249,61 @@ module.exports = (function(){
 			 * The area function returns the area in m2 of a single geoshape
 			 * value, or of a nodeset of ordered geopoints.
 			 *
+			 * @see https://opendatakit.github.io/xforms-spec/#fn:area
+			 * 
 			 * @return {NumberType}
 			 */
-			"area" : {
+			area : {
 
 				fn: function(a)
 				{
-					var area, allValid,
-						geopoints = [],
-						latLngs = [];
+					var	geopoints = [];
 
-					if (a instanceof NodeSetType && a.value.length > 1){
+					if ( a instanceof NodeSetType && a.value.length > 1 ){
 						a.value.forEach(function(node){
 							geopoints.push(nodeStringValue(node));
 						});
-					} else if (a instanceof NodeSetType) {
+					} else if ( a instanceof NodeSetType ) {
 						geopoints = nodeStringValue(a.value[0]).split(';');
-					} else if (a instanceof StringType) {
+					} else if ( a instanceof StringType ) {
 						geopoints = a.value.split(';');	
 					}
-
-					latLngs = geopoints.map(function(geopoint){
-						return geopoint.trim().split(' ');
-					});
 					
-					// check if all geopoints are valid (copied from Enketo FormModel)
-					allValid = latLngs.every(function(coords){
-						return ( 
-							(coords[ 0 ] !== '' && coords[ 0 ] >= -90 && coords[ 0 ] <= 90 ) &&
-							( coords[ 1 ] !== '' && coords[ 1 ] >= -180 && coords[ 1 ] <= 180 ) &&
-							( typeof coords[ 2 ] == 'undefined' || !isNaN( coords[ 2 ] ) ) &&
-							( typeof coords[ 3 ] == 'undefined' || ( !isNaN( coords[ 3 ] ) && coords[ 3 ] >= 0 ) )
-							);
-					});
+					return new NumberType( geo.area( geopoints ) ); 
+				},
 
-					if (!allValid) {
-						area = Number.NaN;
-					} else {
-						var EARTH_RADIUS = 6378100,
-							pointsCount = latLngs.length,
-							d2r = Math.PI / 180,
-							p1, p2;
-							area = 0.0;
+				args: [
+					{t: 'string'}
+				],
 
-						if ( pointsCount > 2 ) {
-							for ( var i = 0; i < pointsCount; i++ ) {
-								p1 = {
-									lat: latLngs[ i ][ 0 ],
-									lng: latLngs[ i ][ 1 ]
-								};
-								p2 = {
-									lat: latLngs[ ( i + 1 ) % pointsCount ][ 0 ],
-									lng: latLngs[ ( i + 1 ) % pointsCount ][ 1 ]
-								};
-								area += ( ( p2.lng - p1.lng ) * d2r ) *
-									( 2 + Math.sin( p1.lat * d2r ) + Math.sin( p2.lat * d2r ) );
-							}
-							area = area * EARTH_RADIUS * EARTH_RADIUS / 2.0;
-						}
-						area = Math.abs( Math.round(area*100) ) / 100;
+				ret: 'number'
+			},
+
+			/**
+			 * The distance function returns the distance in m of a single geoshape
+			 * value, or a geotrace value, or of a nodeset of ordered geopoints.
+			 * 
+			 * @see https://opendatakit.github.io/xforms-spec/#fn:distance
+			 *
+			 * @return {NumberType}
+			 */
+			distance : {
+
+				fn: function(a)
+				{
+					var	geopoints = [];
+
+					if ( a instanceof NodeSetType && a.value.length > 1 ){
+						a.value.forEach(function(node){
+							geopoints.push(nodeStringValue(node));
+						});
+					} else if ( a instanceof NodeSetType ) {
+						geopoints = nodeStringValue(a.value[0]).split(';');
+					} else if ( a instanceof StringType ) {
+						geopoints = a.value.split(';');	
 					}
 					
-					return new NumberType(area); 
+					return new NumberType( geo.distance( geopoints ) ); 
 				},
 
 				args: [

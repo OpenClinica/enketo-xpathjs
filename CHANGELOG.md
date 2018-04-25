@@ -2,17 +2,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-[Unreleased]
+[1.8.0] - 2018-04-25
 --------------------
 ##### Removed
 - Built bundle JS files.
 
 ##### Added
 - Decimal-time() support.
+- Distance() support.
 - Make evaluator extensible with custom XPath functions.
 
 ##### Fixed
-- Decimal-date-time() not spec-compliant.
+- Decimal-date-time() not spec-compliant at all.
 
 [1.7.0] - 2018-04-22
 --------------------

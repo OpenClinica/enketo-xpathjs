@@ -159,13 +159,13 @@ describe('Custom "OpenRosa" functions', function () {
         });
     });
 
-    it('dates as string', function(){
+    it('dates as string', function () {
         [
-            [ '"2018-01-01"', '2018-01-01'],
-            [ 'date("2018-01-01")', '2017-12-31T17:00:00.000-07:00'], // America/Phoenix
-            [ '"2018-01-01" + 1', '17533'], // converted to Number according to regular XPath rules
-            [ 'date("2018-01-01" + 1)', '2018-01-01T17:00:00.000-07:00'],
-        ].forEach(function( t ){
+            ['"2018-01-01"', '2018-01-01'],
+            ['date("2018-01-01")', '2017-12-31T17:00:00.000-07:00'], // America/Phoenix
+            ['"2018-01-01" + 1', '17533'], // converted to Number according to regular XPath rules
+            ['date("2018-01-01" + 1)', '2018-01-01T17:00:00.000-07:00'],
+        ].forEach(function (t) {
             var result = documentEvaluate(t[0], doc, helpers.xhtmlResolver, win.XPathResult.STRING_TYPE, null);
             expect(result.stringValue).to.equal(t[1]);
         });
@@ -175,7 +175,7 @@ describe('Custom "OpenRosa" functions', function () {
             "now()",
             "date(today() + 10)",
             "date(10 + today())"
-        ].forEach(function(t) {
+        ].forEach(function (t) {
             var result = documentEvaluate(t, doc, helpers.xhtmlResolver, win.XPathResult.STRING_TYPE, null);
             expect(result.stringValue).to.match(/([0-9]{4}\-[0-9]{2}\-[0-9]{2})([T]|[\s])([0-9]){2}:([0-9]){2}([0-9:.]*)(\+|\-)([0-9]{2}):([0-9]{2})$/);
         });
@@ -310,7 +310,7 @@ describe('Custom "OpenRosa" functions', function () {
             ["format-date(., '%Y/%n | %y/%m | %b')", doc.getElementById("FunctionDateCase2"), '2012/8 | 12/08 | Aug'],
             ["format-date(., '%M | %S | %3')", doc.getElementById("FunctionDateCase2"), '00 | 00 | 000'],
             ["format-date('" + date.toString() + "', '%e | %a' )", doc,
-            date.getDate() + ' | ' + ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()]
+                date.getDate() + ' | ' + ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()]
             ],
             ["format-date('not a date', '%M')", doc, 'Invalid Date'],
             //["format-date('Mon, 02 Jul 2012 00:00:00 GMT', )", doc, '']
@@ -690,37 +690,66 @@ describe('Custom "OpenRosa" functions', function () {
         // expect(result.stringValue).to.equal("");
     });
 
-    it('area()', function () {
-        var result,
-            geoshapeValue1 = '7.9377 -11.5845 0 0;7.9324 -11.5902 0 0;7.927 -11.5857 0 0;7.925 -11.578 0 0;7.9267 -11.5722 0 0;7.9325 -11.5708 0 0;7.9372 -11.5737 0 0;7.9393 -11.579 0 0;7.9377 -11.5845 0 0',
-            geoshapeValue2 = '38.253094215699576 21.756382658677467;38.25021274773806 21.756382658677467;38.25007793942195 21.763892843919166;38.25290886154963 21.763935759263404;38.25146813817506 21.758421137528785'; //
+    describe('distance() and area() functions', function () {
+        var SHAPE1 = '7.9377 -11.5845 0 0;7.9324 -11.5902 0 0;7.927 -11.5857 0 0;7.925 -11.578 0 0;7.9267 -11.5722 0 0;7.9325 -11.5708 0 0;7.9372 -11.5737 0 0;7.9393 -11.579 0 0;7.9377 -11.5845 0 0';
+        var TRACE1 = '38.253094215699576 21.756382658677467;38.25021274773806 21.756382658677467;38.25007793942195 21.763892843919166;38.25290886154963 21.763935759263404;38.25146813817506 21.758421137528785';
+        var TRACE2 = '38.25304740874071 21.75644703234866;38.25308110946615 21.763377860443143;38.25078942453431 21.763399318115262;38.25090738066984 21.756640151397733;38.25197740258244 21.75892539347842';
+        var TRACE3 = '38.252845204059824 21.763313487426785;38.25303055837213 21.755867675201443;38.25072202094234 21.755803302185086;38.25062091543717 21.76294870700076;38.25183417221606 21.75692982997134';
+        var LINE = '7.9377 -11.5845 0 0;7.9324 -11.5902 0 0';
+        var SAME = '7.9377 -11.5845 0 0;7.9377 -11.5845 0 0';
+        var EARTH_EQUATORIAL_CIRCUMFERENCE_METERS = 2 * 6378100 * Math.PI;
+        [
+            [SHAPE1, 2333220.77, 5724.36 ],
+            [TRACE1, 151451.76, 1800.69],
+            [TRACE2, 122754.94, 1684.62],
+            [TRACE3, 93911.49, 2076.24],
+            [LINE, 0.0, 861.99],
+            [SAME, 0.0, 0.0],
+            ['0 0;0 1', 0.0, 111318.85],
+            ['0 0;0 90', 0.0, 10018696.05],
+            ['90 0;90 1', 0.0, 0.0],
+            ['5000 5000; 5000 5000', NaN, NaN],
+            ['a', NaN, NaN],
+            ['', NaN, NaN],
+        ].forEach(function(t, i){
+            //var context =  doc;
+            var param = t[0];
+            it(`area() works (${i+1})`, function () {
+                var result = documentEvaluate(`area("${param}")`, doc, null, win.XPathResult.NUMBER_TYPE, null);
+                expect(result.numberValue).to.deep.equal(t[1]);
+            });
+            it(`distance() works (${i+1})`, function () {
+                var result = documentEvaluate(`distance("${param}")`, doc, null, win.XPathResult.NUMBER_TYPE, null);
+                expect(result.numberValue).to.deep.equal(t[2]);
+            });
+        });
 
-        result = documentEvaluate("area('" + geoshapeValue1 + "')", doc, null, win.XPathResult.NUMBER_TYPE, null);
-        expect(result.numberValue).to.equal(2333220.77);
+        [
+            ['FunctionArea1', './*', 2333220.77, 5724.36],
+            ['FunctionArea4', '.', 2333220.77, 5724.36],
+            ['FunctionArea2', './*', 122754.94, 1684.62],
+            ['FunctionArea3', './*', 93911.49, 2076.24],
+        ].forEach(function(t, i){
+            var id = t[0];
+            var param = t[1];
+            it(`area() works (${i+1})`, function () {
+                var result = documentEvaluate(`area(${param})`, doc.getElementById(id), null, win.XPathResult.NUMBER_TYPE, null);
+                expect(result.numberValue).to.deep.equal(t[2]);
+            });
+            it(`distance() works (${i+1})`, function () {
+                var result = documentEvaluate(`distance(${param})`, doc.getElementById(id), null, win.XPathResult.NUMBER_TYPE, null);
+                expect(result.numberValue).to.deep.equal(t[3]);
+            });
+        });
 
-        result = documentEvaluate("area(.)", doc.getElementById('FunctionArea4'), null, win.XPathResult.NUMBER_TYPE, null);
-        expect(result.numberValue).to.equal(2333220.77);
-
-        //from SurveyCTO/ODK
-        result = documentEvaluate("area('" + geoshapeValue2 + "')", doc, null, win.XPathResult.NUMBER_TYPE, null);
-        expect(result.numberValue).to.equal(151451.76);
-
-        result = documentEvaluate("area(./*)", doc.getElementById('FunctionArea1'), null, win.XPathResult.NUMBER_TYPE, null);
-        expect(result.numberValue).to.equal(2333220.77);
-
-        // from SurveyCTO/ODK
-        result = documentEvaluate("area(./*)", doc.getElementById('FunctionArea2'), null, win.XPathResult.NUMBER_TYPE, null);
-        expect(result.numberValue).to.equal(122754.94);
-
-        // from SurveyCTO/ODK
-        result = documentEvaluate("area(./*)", doc.getElementById('FunctionArea3'), null, win.XPathResult.NUMBER_TYPE, null);
-        expect(result.numberValue).to.equal(93911.49);
-
-        result = documentEvaluate("area('')", doc, null, win.XPathResult.NUMBER_TYPE, null);
-        expect(result.numberValue).to.deep.equal(NaN);
-
-        result = documentEvaluate("area('7.9377 -11.5845 0 0;7.9324 -11.5902 0 0')", doc, null, win.XPathResult.NUMBER_TYPE, null);
-        expect(result.numberValue).to.equal(0.0);
+        it('throws error when no parameters are provided', function(){
+            ['area()', 'distance()'].forEach(function(t){
+                var test = function(){
+                    documentEvaluate(`area(${t})`, doc, null, win.XPathResult.NUMBER_TYPE, null);
+                }
+                expect(test).to.throw(win.Error);
+            });
+        })
     });
 
     it('ends-with', function () {
@@ -798,16 +827,16 @@ describe('Custom "OpenRosa" functions', function () {
 
     });
 
-    describe('randomize() shuffles nodesets', function(){
+    describe('randomize() shuffles nodesets', function () {
         var SELECTOR = '//xhtml:div[@id="FunctionRandomize"]/xhtml:div';
 
-        it('without a seed', function(){
+        it('without a seed', function () {
             var result = documentEvaluate(`randomize(${SELECTOR})`, doc, helpers.xhtmlResolver, win.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
             var nodes = [];
             var text = '';
-            for ( var j = 0; j < result.snapshotLength; j++ ) {
-                var node = result.snapshotItem( j );
-                nodes.push( node );
+            for (var j = 0; j < result.snapshotLength; j++) {
+                var node = result.snapshotItem(j);
+                nodes.push(node);
                 text += node.textContent;
             }
             expect(nodes.length).to.equal(6);
@@ -818,27 +847,27 @@ describe('Custom "OpenRosa" functions', function () {
         [
             [42, 'AFCBDE'],
             ['42', 'AFCBDE'],
-            [-42, 'EDAFBC'], 
-            [1, 'BFEACD'], 
+            [-42, 'EDAFBC'],
+            [1, 'BFEACD'],
             [11111111, 'ACDBFE'],
-        ].forEach(function(t){
-            it('with a seed', function(){
+        ].forEach(function (t) {
+            it('with a seed', function () {
                 var result = documentEvaluate(`randomize(${SELECTOR},${t[0]})`, doc, helpers.xhtmlResolver, win.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                 var nodes = [];
                 var text = '';
-                for ( var j = 0; j < result.snapshotLength; j++ ) {
-                    text += result.snapshotItem( j ).textContent;
+                for (var j = 0; j < result.snapshotLength; j++) {
+                    text += result.snapshotItem(j).textContent;
                 }
                 expect(text).to.equal(t[1]);
             });
         });
 
-        [ 
+        [
             `randomize()`,
             `randomize(${SELECTOR}, 'a')`,
             `randomize(${SELECTOR}, 1, 2)`,
         ].forEach(function (t) {
-            it(`with invalid args (${t}), throws an error`, function(){
+            it(`with invalid args (${t}), throws an error`, function () {
                 var test = function () {
                     documentEvaluate(t, doc, helpers.xhtmlResolver, win.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                 };
@@ -848,13 +877,13 @@ describe('Custom "OpenRosa" functions', function () {
 
     });
 
-    describe('decimal-date()', function(){
+    describe('decimal-date()', function () {
         [
             ['"1970-01-01T00:00:00.000Z"', 0.000],
             ['"1970-01-02T00:00:00.000Z"', 1.000],
             ['"2018-04-24T15:30:00.000+06:00"', 17645.396],
-        ].forEach(function(t){
-            it(`decimates dates ${t[0]} to ${t[1]}`, function(){
+        ].forEach(function (t) {
+            it(`decimates dates ${t[0]} to ${t[1]}`, function () {
                 var result = documentEvaluate(`decimal-date-time(${t[0]})`, doc, helpers.xhtmlResolver, win.XPathResult.NUMBER_TYPE, null);
                 expect(result.numberValue).to.deep.equal(t[1]);
             });
@@ -864,7 +893,7 @@ describe('Custom "OpenRosa" functions', function () {
             '',
             '"1970-01-01T00:00:00.000Z", 2',
         ].forEach(function (t) {
-            it(`with invalid args (${t}), throws an error`, function(){
+            it(`with invalid args (${t}), throws an error`, function () {
                 var test = function () {
                     documentEvaluate(`decimal-date-time(${t})`, doc, helpers.xhtmlResolver, win.XPathResult.NUMBER_TYPE, null);
                 };
@@ -873,7 +902,7 @@ describe('Custom "OpenRosa" functions', function () {
         });
     });
 
-    describe('decimal-time()', function(){
+    describe('decimal-time()', function () {
         [
             ['"06:00:00.000-07:00"', 0.250],
             ['"06:00:00.000-01:00"', 0.000],
@@ -889,8 +918,8 @@ describe('Custom "OpenRosa" functions', function () {
             ['"06:00:60.000-07:00"', NaN],
             ['"23:59:00.000-07:60"', NaN],
             ['now()', NaN],
-        ].forEach(function(t){
-            it(`decimates time ${t[0]} to ${t[1]}`, function(){
+        ].forEach(function (t) {
+            it(`decimates time ${t[0]} to ${t[1]}`, function () {
                 var result = documentEvaluate(`decimal-time(${t[0]})`, doc, helpers.xhtmlResolver, win.XPathResult.NUMBER_TYPE, null);
                 expect(result.numberValue).to.deep.equal(t[1]);
             });
@@ -898,8 +927,8 @@ describe('Custom "OpenRosa" functions', function () {
 
         [
             ['decimal-time("12:00:00.000-07:00") - decimal-time("06:00:00.000-07:00")', 0.250],
-        ].forEach(function(t){
-            it(`facilitates time calculations and evaluates ${t[0]} to ${t[1]}`, function(){
+        ].forEach(function (t) {
+            it(`facilitates time calculations and evaluates ${t[0]} to ${t[1]}`, function () {
                 var result = documentEvaluate(t[0], doc, helpers.xhtmlResolver, win.XPathResult.NUMBER_TYPE, null);
                 expect(result.numberValue).to.deep.equal(t[1]);
             });
@@ -909,7 +938,7 @@ describe('Custom "OpenRosa" functions', function () {
             '',
             '"06:00:00.000-07:00", 2',
         ].forEach(function (t) {
-            it(`with invalid args (${t}), throws an error`, function(){
+            it(`with invalid args (${t}), throws an error`, function () {
                 var test = function () {
                     documentEvaluate(`decimal-time(${t})`, doc, helpers.xhtmlResolver, win.XPathResult.NUMBER_TYPE, null);
                 };
@@ -968,54 +997,55 @@ describe('Custom "OpenRosa" functions', function () {
     });
     */
 
-    describe('custom XPath functions', function(){
+    describe('custom XPath functions', function () {
 
-        afterEach(function(){
+        afterEach(function () {
             win.XPathJS.customXPathFunction.remove('comment-status');
         });
 
-        it('can be added', function(){
-            var obj = { status: 'good' };
+        it('can be added', function () {
+            var obj = {
+                status: 'good'
+            };
             var node = doc.getElementById('FunctionCustom');
-            node.textContent = JSON.stringify( obj );
+            node.textContent = JSON.stringify(obj);
 
             var test = function () {
-                return documentEvaluate( 'comment-status(.)', node, helpers.xhtmlResolver, win.XPathResult.STRING_TYPE, null );
+                return documentEvaluate('comment-status(.)', node, helpers.xhtmlResolver, win.XPathResult.STRING_TYPE, null);
             };
 
             // Check the function doesn't exist before.
-            expect( test ).to.throw(/does not exist/);
+            expect(test).to.throw(/does not exist/);
 
             // Add custom function
             win.XPathJS.customXPathFunction.add('comment-status', {
-                fn: function(a){
+                fn: function (a) {
                     var curValue = a.toString();
                     var status = '';
 
                     try {
                         status = JSON.parse(curValue).status;
-                    }
-                    catch(e){
+                    } catch (e) {
                         console.error('Could not parse JSON from', curValue);
                     };
-                    
-                    return new win.XPathJS.customXPathFunction.type.StringType( status ); 
+
+                    return new win.XPathJS.customXPathFunction.type.StringType(status);
                 },
-                args: [
-                    {t: 'string'}
-                ],
+                args: [{
+                    t: 'string'
+                }],
                 ret: 'string'
             });
-        
+
             // Check functioning:
             var result = test();
-            expect( result.stringValue ).to.equal( obj.status );
+            expect(result.stringValue).to.equal(obj.status);
 
             // Check parameter errors:
             var test = function () {
-                documentEvaluate( 'comment-status(., 2)', node, helpers.xhtmlResolver, win.XPathResult.STRING_TYPE, null );
+                documentEvaluate('comment-status(., 2)', node, helpers.xhtmlResolver, win.XPathResult.STRING_TYPE, null);
             };
-            expect( test ).to.throw( win.Error );
+            expect(test).to.throw(win.Error);
 
         });
 
